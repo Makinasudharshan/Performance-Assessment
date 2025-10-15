@@ -13,6 +13,8 @@ DELETE → /delete
 
 PATCH → /patch
 
+
+
 The suite helps validate performance KPIs like response time, throughput, and error rates under different load conditions.
 
 ⚙️ Project Structure
@@ -21,6 +23,8 @@ The suite helps validate performance KPIs like response time, throughput, and er
 ├── results/                      # Raw JTL results
 ├── report-html/                  # Generated HTML reports
 └── README.md                     # Documentation
+
+
 
 🚀 Setup Instructions
 1️⃣ Run via Docker Compose (Recommended)
@@ -33,20 +37,23 @@ Executes the JMeter test in non-GUI mode
 
 Generates HTML performance reports automatically
 
+
+
+
 📄 Reports generated at:
 
 Raw results: results/results.jtl
 
 HTML dashboard: report-html/index.html
 
+
+
 2️⃣ Run JMeter GUI (Optional)
 
-For exploratory testing or modifying scenarios:
-
-jmeter
+For exploratory testing or modifying scenarios:  jmeter
 
 
-Open PostBin_Test.jmx in JMeter GUI
+Open httpbin_api_test.jmx in JMeter GUI
 
 Adjust Thread Group for user count, ramp-up, and duration
 
@@ -78,7 +85,7 @@ Endurance (Soak) Test	Check stability & memory leaks over time	100 users for 2 h
 Spike Test	Assess resilience to sudden traffic spikes	0 → 1200 users instantly, then back down
 🧭 Execution via CLI (Alternative)
 nohup ./jmeter -n \
-  -t PostBin_Test.jmx \
+  -t httpbin_api_test.jmx \
   -l results/soaktest.jtl \
   -e -o report-html/soaktest \
   > results/soaktest.log 2>&1 &
