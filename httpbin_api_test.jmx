@@ -1,0 +1,2180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan">
+      <stringProp name="TestPlan.comments">You can run me using: jmeter -Jthreads=&lt;Number of threads&gt; -Jrampup=&lt;rampup in seconds&gt; -Jduration=&lt;duration in seconds&gt; -Jiterations=&lt;Number of iterations, -1 means infinite&gt; -e -o &lt;report output folder&gt;</stringProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Load Test Scenario" enabled="false">
+        <intProp name="ThreadGroup.num_threads">100</intProp>
+        <intProp name="ThreadGroup.ramp_time">10</intProp>
+        <longProp name="ThreadGroup.duration">900</longProp>
+        <longProp name="ThreadGroup.delay">5</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01-GET API ">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/get?show_env=1</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="02-POST API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/post</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03-PUT API">
+          <stringProp name="TestPlan.comments">httpbin.org</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/put</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">PUT</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04-PATCH API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/patch</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">PATCH</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="05-DELETE API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/delete</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">DELETE</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">/Users/vishan/Desktop/Performance_Test/LoadTest_Report.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="false">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">/Users/vishan/Desktop/Performance_Test/LoadTest_Report.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="Backend Listener" enabled="false">
+          <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="influxdbMetricsSender" elementType="Argument">
+                <stringProp name="Argument.name">influxdbMetricsSender</stringProp>
+                <stringProp name="Argument.value">org.apache.jmeter.visualizers.backend.influxdb.HttpMetricsSender</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="influxdbUrl" elementType="Argument">
+                <stringProp name="Argument.name">influxdbUrl</stringProp>
+                <stringProp name="Argument.value">http://host_to_change:8086/write?db=jmeter</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="application" elementType="Argument">
+                <stringProp name="Argument.name">application</stringProp>
+                <stringProp name="Argument.value">application name</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="measurement" elementType="Argument">
+                <stringProp name="Argument.name">measurement</stringProp>
+                <stringProp name="Argument.value">jmeter</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="summaryOnly" elementType="Argument">
+                <stringProp name="Argument.name">summaryOnly</stringProp>
+                <stringProp name="Argument.value">true</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="samplersRegex" elementType="Argument">
+                <stringProp name="Argument.name">samplersRegex</stringProp>
+                <stringProp name="Argument.value">.*</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="percentiles" elementType="Argument">
+                <stringProp name="Argument.name">percentiles</stringProp>
+                <stringProp name="Argument.value">90;95;99</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="testTitle" elementType="Argument">
+                <stringProp name="Argument.name">testTitle</stringProp>
+                <stringProp name="Argument.value">Test name</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="eventTags" elementType="Argument">
+                <stringProp name="Argument.name">eventTags</stringProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="classname">org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient</stringProp>
+        </BackendListener>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Soak Test Scenario">
+        <intProp name="ThreadGroup.num_threads">100</intProp>
+        <intProp name="ThreadGroup.ramp_time">20</intProp>
+        <longProp name="ThreadGroup.duration">7200</longProp>
+        <longProp name="ThreadGroup.delay">5</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01-GET API ">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/get?show_env=1</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="02-POST API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/post</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03-PUT API">
+          <stringProp name="TestPlan.comments">httpbin.org</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/put</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">PUT</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04-PATCH API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/patch</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">PATCH</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="05-DELETE API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/delete</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">DELETE</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="false">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion">
+          <stringProp name="DurationAssertion.duration">1000</stringProp>
+        </DurationAssertion>
+        <hashTree/>
+        <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion">
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+          <stringProp name="scriptLanguage">java</stringProp>
+        </JSR223Assertion>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">/Users/vishan/Desktop/Performance_Test/SoakTest.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Stress Test Scenario" enabled="false">
+        <intProp name="ThreadGroup.num_threads">500</intProp>
+        <intProp name="ThreadGroup.ramp_time">10</intProp>
+        <longProp name="ThreadGroup.duration">300</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01-GET API ">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/get?show_env=1</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="02-POST API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/post</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03-PUT API">
+          <stringProp name="TestPlan.comments">httpbin.org</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/put</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">PUT</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04-PATCH API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/patch</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">PATCH</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="05-DELETE API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/delete</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">DELETE</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">/Users/vishan/Desktop/Performance_Test/stress_test_Report.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">/Users/vishan/Desktop/Performance_Test/stress_test_Report.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <kg.apc.jmeter.threads.UltimateThreadGroup guiclass="kg.apc.jmeter.threads.UltimateThreadGroupGui" testclass="kg.apc.jmeter.threads.UltimateThreadGroup" testname="Spike Test Scenario" enabled="false">
+        <collectionProp name="ultimatethreadgroupdata">
+          <collectionProp name="1495499073">
+            <stringProp name="48625">100</stringProp>
+            <stringProp name="0">0</stringProp>
+            <stringProp name="1567">10</stringProp>
+            <stringProp name="50547">300</stringProp>
+            <stringProp name="53">5</stringProp>
+          </collectionProp>
+          <collectionProp name="-1715651055">
+            <stringProp name="49586">200</stringProp>
+            <stringProp name="1629">30</stringProp>
+            <stringProp name="1567">10</stringProp>
+            <stringProp name="49803">270</stringProp>
+            <stringProp name="53">5</stringProp>
+          </collectionProp>
+          <collectionProp name="-1630426327">
+            <stringProp name="51508">400</stringProp>
+            <stringProp name="1722">60</stringProp>
+            <stringProp name="1567">10</stringProp>
+            <stringProp name="49710">240</stringProp>
+            <stringProp name="53">5</stringProp>
+          </collectionProp>
+          <collectionProp name="1074396287">
+            <stringProp name="52469">500</stringProp>
+            <stringProp name="48687">120</stringProp>
+            <stringProp name="48">0</stringProp>
+            <stringProp name="53">5</stringProp>
+            <stringProp name="53">5</stringProp>
+          </collectionProp>
+          <collectionProp name="395141088">
+            <stringProp name="52469">500</stringProp>
+            <stringProp name="49710">240</stringProp>
+            <stringProp name="48">0</stringProp>
+            <stringProp name="53">5</stringProp>
+            <stringProp name="53">5</stringProp>
+          </collectionProp>
+        </collectionProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+      </kg.apc.jmeter.threads.UltimateThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01-GET API ">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/get?show_env=1</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="02-POST API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/post</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03-PUT API">
+          <stringProp name="TestPlan.comments">httpbin.org</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/put</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">PUT</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04-PATCH API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/patch</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">PATCH</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="05-DELETE API">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/delete</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">DELETE</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${__RandomString(6,abcdefghijklmnopqrstuvwxyz,)}&quot;,&#xd;
+    &quot;age&quot;: ${__Random(18,60,)}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="accept" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+            <stringProp name="TestPlan.comments">Created from cURL on 2025-10-10T15:56:00.462</stringProp>
+          </HeaderManager>
+          <hashTree/>
+          <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Duration Assertion" enabled="true">
+            <stringProp name="DurationAssertion.duration">1000</stringProp>
+          </DurationAssertion>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Error reponse assertion" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// --- BeanShell Assertion: Check overall error % &lt; 1% ---
+// Get total and failed sample counters from JMeter properties
+int total = 0;
+int failed = 0;
+
+if (props.get(&quot;TOTAL_SAMPLES&quot;) != null) {
+    total = Integer.parseInt(props.get(&quot;TOTAL_SAMPLES&quot;));
+}
+if (props.get(&quot;FAILED_SAMPLES&quot;) != null) {
+    failed = Integer.parseInt(props.get(&quot;FAILED_SAMPLES&quot;));
+}
+
+// Increment counters for current sample
+total++;
+if (!prev.isSuccessful()) {
+    failed++;
+}
+
+// Update the properties so the next sampler can see them
+props.put(&quot;TOTAL_SAMPLES&quot;, String.valueOf(total));
+props.put(&quot;FAILED_SAMPLES&quot;, String.valueOf(failed));
+
+// Calculate error %
+double errorRate = 0.0;
+if (total &gt; 0) {
+    errorRate = ((double) failed / total) * 100;
+}
+
+// Log info
+log.info(&quot;Total Samples: &quot; + total + &quot;, Failed: &quot; + failed + &quot;, Error Rate: &quot; + errorRate + &quot;%&quot;);
+
+// Check condition
+if (errorRate &gt; 1.0) {
+    Failure = true;
+    FailureMessage = &quot;❌ Error rate too high: &quot; + errorRate + &quot;% (&gt;1%)&quot;;
+}</stringProp>
+            <stringProp name="scriptLanguage">java</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="false">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">/Users/vishan/Desktop/Performance_Test/Results/Spike_test/SpikeTest.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">/Users/vishan/Desktop/Performance_Test/SpikeTest.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
